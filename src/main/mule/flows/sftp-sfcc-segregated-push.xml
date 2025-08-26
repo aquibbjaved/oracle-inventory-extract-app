@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="sfcc-sftp-push-subflow" doc:id="e9232c0c-18b2-4375-bb6b-b14981336903" >
+		<sftp:write doc:name="SFTP Write SFCC" doc:id="c7fbc23d-3f10-499e-ad69-3c561c6aa090" config-ref="SFTP_Config_SFCC_Write" path='#[vars.fileName default ""]' mode="APPEND">
+				<sftp:content><![CDATA[#[%dw 2.0
+output application/csv header=false
+---
+payload]]]></sftp:content>
+			</sftp:write>
+		<remove-variable doc:name="Remove Variable (inventoryDetail)" doc:id="bdea5320-b4f7-4f21-a692-0c4f8c1c0215" variableName="invDetails"/>
+		<remove-variable doc:name="Remove Variable (fileName)" doc:id="dd24aaa9-cbcf-4d8c-9ad4-3c1e9230f40c" variableName="fileName"/>
+		<logger level="INFO" doc:name="log-end" doc:id="5b47c927-30a0-4711-8f7b-4a8769a82e73" message='#["End of Write(Append) inside Batch_Step. TraceId : " ++ ((vars.traceId) default"")]' />
+		<error-handler ref="sftp-write-error-handler" />
+	</flow>
+	
+</mule>

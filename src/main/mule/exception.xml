@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:email="http://www.mulesoft.org/schema/mule/email"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd">
+	<error-handler name="sftp-read-error-handler" doc:id="e754edef-42e3-4fc2-9419-c679053b1520" >
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="7f7cf085-39dc-4143-bfa0-a34f71e34c93" type="SFTP:ILLEGAL_PATH">
+					<logger level="ERROR" doc:name="log-error" doc:id="de011662-c515-4ace-ba94-315794a14b8d" message='#["Error Occured while calling SFTP READ, Oracle WMS SFTP : " ++ (error.description default "") ++ ", TraceId : " ++ ((vars.traceId) default "")]'/>
+					<ee:transform doc:name="Error Data" doc:id="f11c87c5-2f16-4412-afac-9be84ae94ec3" >
+						<ee:message >
+						</ee:message>
+						<ee:variables >
+							<ee:set-variable variableName="errorData" ><![CDATA[%dw 2.0
+output application/java
+var errorType = error.errorType..identifier joinBy (",") default "404  NOT FOUND"
+---
+{
+	"errorDescription": (error.description) default "404  NOT FOUND",
+	"errorSeverity": "CRITICAL", 
+	"errorStackTrace": error.cause as String default "404  NOT FOUND",
+	"errorType": errorType,
+	"retriable": "No",
+	"application": p('application.name'),
+	"failingComponent": error.failingComponent default "Oracle WMS SFTP Read"
+
+}]]></ee:set-variable>
+						</ee:variables>
+					</ee:transform>
+				</on-error-continue>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="7bb7ff28-aff7-45f7-8c96-af21688c4334" type="ANY">
+			<logger level="ERROR" doc:name="log-error" doc:id="097be238-f9f8-40b0-9186-81f42ce23e5a" message='#["Error Occured while calling SFTP READ, Oracle WMS SFTP : " ++ (error.description default "") ++ ", TraceId : " ++ ((vars.traceId) default "")]' />
+			<ee:transform doc:name="Error Data" doc:id="b0ea8422-4d6f-4546-b066-1a512470fdad">
+						<ee:message>
+						</ee:message>
+						<ee:variables>
+							<ee:set-variable variableName="errorData"><![CDATA[%dw 2.0
+output application/java
+var errorType = error.errorType..identifier joinBy (",") default "Internal Server Error"
+---
+{
+	"errorDescription": (error.description) default "Internal Server Error",
+	"errorSeverity": "CRITICAL", 
+	"errorStackTrace": error.cause as String default "Internal Server Error",
+	"errorType": errorType,
+	"retriable": "No",
+	"application": p('application.name'),
+	"failingComponent": error.failingComponent default "Oracle WMS SFTP Read"
+
+}]]></ee:set-variable>
+						</ee:variables>
+				</ee:transform>
+		</on-error-propagate>
+	</error-handler>
+	<error-handler name="sftp-write-error-handler" doc:id="0cd76105-049e-4078-a330-7e60cba8c307" >
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="bfde9a34-b20f-462a-bdae-8ef5ff837af1" type="ANY">
+			<logger level="INFO" doc:name="log-error" doc:id="c459a13b-683e-49d6-a120-a1e42eb8dace" message='#["FATAL : Error Occured while calling SFTP Write, Oracle SFTP : " ++ (error.description default "") ++ "check Email for more details. TraceId : " ++ ((vars.traceId) default "")]'/>
+			<ee:transform doc:name="Email/Error Data Variable" doc:id="2443be22-7a1a-44c7-bbad-936fbe80c6a7" >
+				<ee:message >
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="emailContent" ><![CDATA[%dw 2.0
+output application/java
+var errorType = error.errorType..identifier joinBy (",") default "Internal Server Error"
+
+---
+{
+	"subject" : "Error Occurred while Writing/Appending content to the Inventory file",
+	"storeName" : vars.invDetails.store default "",
+	"SKU" : vars.invDetails.sku default "",
+	"fileName" : vars.fileName default "",
+	"correlationID" : vars.traceId default correlationId,
+	"errorData" : {
+	"application": p('application.name'),
+	"errorDescription": (error.description) default "Internal Server Error",
+	"errorSeverity": "CRITICAL", 
+	"errorStackTrace": error.cause as String default "Internal Server Error",
+	"errorType": errorType,
+	"retriable": "Yes",
+	"fileName" : vars.fileName default "",
+	"SKU" : (vars.invDetails default{})."sku" default "",
+	"StoreID" : (vars.invDetails default{})."store" default "",
+	"errorDetails" : "Please Check Oracle WMS Error Directory for more details",
+	// A retry application can increment no. of external retries and terminate accordingly
+	"retryCount" : "0",
+	"failingComponent": error.failingComponent default "SFCC SFTP Write(Append)"
+	}
+}]]></ee:set-variable>
+					<ee:set-variable variableName="errorData" ><![CDATA[%dw 2.0
+output application/java
+var errorType = error.errorType..identifier joinBy (",") default "Internal Server Error"
+---
+{
+	"application": p('application.name'),
+	"errorDescription": (error.description) default "Internal Server Error",
+	"errorSeverity": "CRITICAL", 
+	"errorStackTrace": error.cause as String default "Internal Server Error",
+	"errorType": errorType,
+	"retriable": "Yes",
+	"fileName" : vars.fileName default "",
+	"SKU" : (vars.invDetails default{})."sku" default "",
+	"StoreID" : (vars.invDetails default{})."store" default "",
+	"errorDetails" : "Please Check Oracle WMS Error Directory for more details",
+	// A retry application can increment no. of external retries and terminate accordingly
+	"retryCount" : "0",
+	"failingComponent": error.failingComponent default "SFCC SFTP Write(Append)"
+
+}]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+			<remove-variable doc:name="Remove fileName Variable" doc:id="882e2198-a193-42f2-a559-9ccdea7d58cd" variableName="fileName" />
+			<remove-variable doc:name="Remove invDetails Variable" doc:id="afa09692-9a34-4542-a45d-d0b271647cc2" variableName="invDetails" />
+			<async doc:name="Async" doc:id="6a82b185-66ff-495b-bbca-48487a43d7d7" >
+				<flow-ref doc:name="Send Error Notification" doc:id="5a1aacf0-b3ac-4b16-ae4a-fc449237dd53" name="smtp-send-email-notification-subflow"/>
+			</async>
+			<remove-variable doc:name="Remove errorData Variable" doc:id="74b7d065-cecc-4dc0-9f74-88fc7300b128" variableName="errorData"/>
+			<remove-variable doc:name="Remove emailContent Variable" doc:id="26fc4bfd-0202-491a-a01f-f9b5c1617a3b" variableName="emailContent"/>
+		</on-error-propagate>
+	</error-handler>
+</mule>

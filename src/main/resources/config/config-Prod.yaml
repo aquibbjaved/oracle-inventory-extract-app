@@ -1,0 +1,66 @@
+######## Application Parameters ############
+application:
+      name: "oracle-inventory-extract-application"
+      api:
+         id:""
+
+######## Scheduler #########################
+scheduler:
+      cron: "0 0 4 * * ?"
+      timeZone: "UTC"
+      status: "online"
+
+######### Batch Job Configurations ##########
+batch:
+    block-size: "100"
+    max-concurrency: "16"
+    
+######### SFTP Connection Configurations #########################################
+sftp:
+    ########## Hosted At CouchDrop OpenSource SFTP ###############
+    oracle:
+        read: 
+            host: "inventory.couchdrop.io"
+            port: "22"
+            username: "user_b2q59uzhd54yn9bp"
+            password: "onPkw8iA3dpf8MGVF3iM"
+            workingDirectory: "/"
+            ###### In case Reprocessing is needed for a earlier Dated File ##########
+            dateOffSet: "0D"
+        write:
+            host: "192.168.31.97"
+            port: "22"
+            username: "aaquib"
+            password: "Soda$!12345"
+            workingDirectory: "C:/Users/aaquib/oracle"  
+    ########## Hosted At Local Computer Via OpenSSH ###########
+    sfcc:
+        host: "192.168.31.97"
+        port: "22"
+        username: "aaquib"
+        password: "Soda$!12345"
+        workingDirectory: "C:/Users/aaquib/sfcc"  
+    #### Retry/Reconnection Configuration #########################
+    retry:
+        attempts: "2"
+        frequency: "5000"
+    reconnection:
+        attempts: "2"
+        frequency: "5000"
+    responseTimeout: "30000" 
+    
+    
+############ Email SMTP Configurations #############################
+emailSMTP:
+     host: "smtp.gmail.com"
+     port: "25"
+     username: "98sleo@gmail.com"
+     password: "jarkaqkbwfkxrtuj"
+     fromAddress: "98sleo@gmail.com"
+     toAddresses: "aquibbjaved@gmail.com"
+     ccAddresses: "jd38800@gmail.com,ajaved1008@gmail.com"
+     #### Retry/Reconnection Configuration #########################
+     retry:
+        attempts: "2"
+        frequency: "5000"
+   

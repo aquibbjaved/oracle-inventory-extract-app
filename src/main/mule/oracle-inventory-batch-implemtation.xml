@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd 
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd">
+	<flow name="oracle-inventory-batch-implementation-flow" doc:id="e6a5daa6-3b58-49bd-b4aa-1737b7af8ac7" >
+		<logger level="INFO" doc:name="log-start" doc:id="4a4cc31d-4607-48c9-bd8a-a24f52f953be" message='#["Started Flow Batch Process Files, proceeding to read file. TraceId : " ++ ((vars.traceId) default"")]' category="INFO" />
+		<flow-ref doc:name="Read Oracle WMS SFTP" doc:id="c8b3dd48-2369-4cb1-a486-525bdd892c11" name="sftp-oracle-wms-csvfile-read-subflow"/>
+		<choice doc:name="Check if Data was received ?" doc:id="7c8176df-0ad6-40f4-9f2f-bba4bf11f7e1" >
+			<when expression="#[(isEmpty(payload)) and (isEmpty(vars.errorData))]" >
+				<logger level="INFO" doc:name="log-audit" doc:id="2efbf90e-a5c9-4475-85dd-05c024ec7bc4" message='#["The Inventory file found had no details. TraceId : " ++ ((vars.traceId) default"")]'/>
+			</when>
+			<when expression="#[(!isEmpty(vars.errorData))]">
+				<logger level="INFO" doc:name="log-audit" doc:id="c2efe5c6-9fda-4832-9606-995e35fbb6a2" message='#["The file Read process encountered an Error out. Check Email for more details. TraceId : " ++ ((vars.traceId) default"")]'/>
+			</when>
+			<otherwise>
+				<ee:transform doc:name="Stream Payload in JSON" doc:id="809b757f-4f5c-4b80-af38-eb7eb52b65c5">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+@StreamCapable
+input payload application/csv header=true
+output application/json deferred=true
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+				<batch:job jobName="batch-job-oracle-inventory-extract-process" doc:id="a49f40ed-8f38-4329-84aa-7734c4b2e36a" blockSize="${batch.block-size}" maxConcurrency="${batch.max-concurrency}">
+			<batch:process-records>
+				<batch:step name="Batch_Step_Valid_Records" doc:id="6a8175e0-59c0-41cc-b093-2b9f4452798f" acceptExpression='#[ (!((payload pluck ((value, key, index) -&gt; isEmpty(value))) contains true)) and ((payload."Quantity" as String) matches /^\d+$/) and (["STANDARD","BACKORDER"] contains (upper(payload.Type default "")))]'>
+					<logger level="INFO" doc:name="log-audit" doc:id="782135a5-5f3f-4cb2-9a28-9bcd0423ef3e" message='#["Inside Batch Step - Batch_Step_Valid_Records. TraceId : " ++ ((vars.traceId) default"")]' />
+					<ee:transform doc:name="Segregated fileName Variable" doc:id="52a74905-daa0-4a93-a000-c33a5da521ed">
+						<ee:message>
+						</ee:message>
+						<ee:variables>
+							<ee:set-variable variableName="fileName"><![CDATA[%dw 2.0
+var storeId = payload."StoreId" default ""
+output application/json
+---
+"from_mule/Inventory" ++ "_" ++ (storeId as String) ++ "_" ++ (now() as Date {format:'dd-MM-yyyy'} as String) ++ ".csv"]]></ee:set-variable>
+									<ee:set-variable variableName="invDetails" ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	"sku" : payload."SKU" default "",
+	"store" : payload."StoreId" default ""
+}]]></ee:set-variable>
+						</ee:variables>
+					</ee:transform>
+					<flow-ref doc:name="Write(Append) SFCC SFTP" doc:id="ae26cc7f-04df-40b1-af9f-33f3883c859f" name="sfcc-sftp-push-subflow" />
+				</batch:step>
+				<batch:step name="Batch_Step_Invalid_Records" doc:id="208295da-bb62-4808-8fd0-d9bb55257bc9" acceptExpression='#[!( (!((payload pluck ((value, key, index) -&gt; isEmpty(value))) contains true)) and ((payload."Quantity" as String) matches /^\d+$/) and (["STANDARD","BACKORDER"] contains (upper(payload.Type default ""))))]'>
+					<logger level="INFO" doc:name="log-audit" doc:id="65e57a7b-d9cc-4577-89a2-5124015307a8" message='#["Inside Batch Step - Batch_Step_Invalid_Records. TraceId : " ++ ((vars.traceId) default"")]' />
+					<ee:transform doc:name="Invalid fileName Variable" doc:id="76716ad6-3867-4983-b560-019e7b6fff84">
+						<ee:message>
+						</ee:message>
+						<ee:variables>
+							<ee:set-variable variableName="fileName"><![CDATA[%dw 2.0
+output application/json
+---
+"from_mule/Inventory_Invalid_" ++ (now() as Date {format:'dd-MM-yyyy'} as String) ++ ".csv"]]></ee:set-variable>
+									<ee:set-variable variableName="invDetails" ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	"sku" : payload."SKU" default "",
+	"store" : payload."StoreId" default ""
+}]]></ee:set-variable>
+						</ee:variables>
+					</ee:transform>
+					<flow-ref doc:name="Write(Append) SFCC SFTP" doc:id="e7db0737-afd3-4251-8900-1cc78aaa01a7" name="sfcc-sftp-push-subflow" />
+				</batch:step>
+				<batch:step name="Batch_Step_Failures_Records" doc:id="5733e43b-647a-4c00-9520-9d3fa7ab30bb" acceptPolicy="ONLY_FAILURES" >
+							<logger level="INFO" doc:name="log-audit" doc:id="24b77214-0b7b-4be8-80e0-06a5e249bcac" message='#["Inside Batch Step - Batch_Step_Failure_Records. TraceId : " ++ ((vars.traceId) default"")]'/>
+							<ee:transform doc:name="Error fileName Variable" doc:id="05bce94a-cf42-4ccd-945d-950ab87403cb" >
+								<ee:message >
+								</ee:message>
+								<ee:variables >
+									<ee:set-variable variableName="fileName" ><![CDATA[%dw 2.0
+output application/json
+---
+"oracle/from_mule/Inventory_Failed_" ++ (now() as Date {format:'dd-MM-yyyy'} as String) ++ ".csv"]]></ee:set-variable>
+									<ee:set-variable variableName="invDetails" ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	"sku" : payload."SKU" default "",
+	"store" : payload."StoreId" default ""
+}]]></ee:set-variable>
+								</ee:variables>
+							</ee:transform>
+							<flow-ref doc:name="Write(Append) Oracle SFTP for Redelivery " doc:id="8f1d8867-6459-4e9a-bd9b-c62b16b24e11" name="sftp-oracle-wms-error-push-subflow"/>
+						</batch:step>
+			</batch:process-records>
+		</batch:job>
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="oracle-inv-batch-implementationFlow1" doc:id="5557de12-53d3-49ca-bc0c-2d17bf3d7fd1" >
+		<http:listener doc:name="Listener" doc:id="cf826662-6ba9-41ef-9e47-6e7fb2455067" config-ref="HTTP_Listener_config" path="/batch-test"/>
+		<sftp:read doc:name="Read Oracle SFTP" doc:id="f29f43eb-27d7-45a3-ae83-1bd771640966" outputMimeType="application/csv; streaming=true; header=true" path="inventory1.csv" config-ref="SFTP_Config_Oracle_Read">
+			<non-repeatable-stream />
+			<reconnect-forever />
+		</sftp:read>
+		<ee:transform doc:name="Transform Message" doc:id="ff547335-387b-41ac-94fa-1ed72f5b8566" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+@StreamCapable
+input payload application/csv header=true
+output application/json deferred=true
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<batch:job jobName="batch-job-oracle-inventory-extract-process1" doc:id="0bca901a-55f7-4f16-ab58-d330aef1c21a" maxConcurrency="${batch.max-concurrency}" blockSize="${batch.block-size}" maxFailedRecords="-1">
+			<batch:process-records>
+				<batch:step name="Batch_Step_Valid_Records" doc:id="da4d4b50-933a-4c04-ba74-88cb618e8c7b" acceptExpression='#[ (!((payload pluck ((value, key, index) -&gt; isEmpty(value))) contains true)) and ((payload."Quantity" as String) matches /^\d+$/) and (["STANDARD","BACKORDER"] contains (upper(payload.Type default "")))]'>
+					<ee:transform doc:name="Transform Message" doc:id="452287fb-fc15-46ce-9b75-43c5f710c8dc" >
+						<ee:message >
+						</ee:message>
+						<ee:variables >
+							<ee:set-variable variableName="storeId" ><![CDATA[%dw 2.0
+output application/json
+---
+payload."StoreId"]]></ee:set-variable>
+						</ee:variables>
+					</ee:transform>
+					<!-- [STUDIO:"Write"]<file:write doc:name="Write" doc:id="55a58e6c-1738-4b38-aec0-22ede6dfa67e" config-ref="File_Config1" mode="APPEND" path="#[&quot;Inventory&quot; ++ &quot;_&quot; ++ (vars.storeId as String) ++ &quot;_&quot; ++ (now() as Date {format:'dd-MM-yyyy'} as String) ++ &quot;.csv&quot;&#93;">
+						<file:content ><![CDATA[#[%dw 2.0
+output application/csv header=false
+&#45;&#45;-
+payload&#93;&#93;&#93;></file:content>
+					</file:write> [STUDIO] -->
+					<sftp:write doc:name="SFTP Write" doc:id="1ae9da90-bb4e-4374-8933-ded5b317e3c9" path="#[&quot;Inventory&quot; ++ &quot;_&quot; ++ (vars.storeId as String) ++ &quot;_&quot; ++ (now() as Date {format:'dd-MM-yyyy'} as String) ++ &quot;.csv&quot;]" mode="APPEND" config-ref="SFTP_Config_SFCC_Write">
+						<sftp:content><![CDATA[#[%dw 2.0
+output application/csv header=false
+---
+payload]]]></sftp:content>
+					</sftp:write>
+					<remove-variable doc:name="Remove Variable" doc:id="be1dfd80-4459-4a5f-b4ba-0564aff0b2af" variableName="storeId"/>
+				</batch:step>
+			</batch:process-records>
+		</batch:job>
+	</flow>
+</mule>
