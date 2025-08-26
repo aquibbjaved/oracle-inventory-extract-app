@@ -24,11 +24,11 @@
 				<artifactId>maven-clean-plugin</artifactId>
 				<version>3.2.0</version>
 				<configuration>
-			        <deployment>
-			            <applicationName>${mule.env}-${project.artifactId}</applicationName>
-			            <muleEnv>${mule.env}</muleEnv>
-			        </deployment>
-    			</configuration>
+					<deployment>
+						<applicationName>${mule.env}-${project.artifactId}</applicationName>
+						<muleEnv>${mule.env}</muleEnv>
+					</deployment>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.mule.tools.maven</groupId>
@@ -74,6 +74,18 @@
 			<groupId>org.mule.connectors</groupId>
 			<artifactId>mule-email-connector</artifactId>
 			<version>1.7.4</version>
+			<classifier>mule-plugin</classifier>
+		</dependency>
+		<dependency>
+			<groupId>com.mulesoft.modules</groupId>
+			<artifactId>mule-secure-configuration-property-module</artifactId>
+			<version>1.2.7</version>
+			<classifier>mule-plugin</classifier>
+		</dependency>
+		<dependency>
+			<groupId>org.mule.modules</groupId>
+			<artifactId>mule-apikit-module</artifactId>
+			<version>1.11.3</version>
 			<classifier>mule-plugin</classifier>
 		</dependency>
 	</dependencies>

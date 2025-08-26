@@ -6,6 +6,133 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd">
+	<error-handler name="error-common" doc:id="037e0ec1-8b88-4054-ae94-af1cf99f46c2" >
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="d8a29fd5-df27-43a4-bbc2-70b18a7675e4" >
+			<logger level="INFO" doc:name="Logger" doc:id="c344e0e2-a471-4665-84c3-7a4a948fa5ab" message='#["Error Occured  : " ++ (error.description default "") ++ ", TraceId : " ++ ((vars.traceId) default "")]' />
+			<ee:transform doc:name="Error Data" doc:id="cb428c1c-18a9-42ae-81f5-9180c27a8ead">
+				<ee:message />
+				<ee:variables>
+					<ee:set-variable variableName="errorData"><![CDATA[%dw 2.0
+output application/java
+var errorType = error.errorType..identifier joinBy (",") default "Internal Server Error"
+---
+{
+	"errorDescription": (error.description) default "Internal Server Error",
+	"errorSeverity": "CRITICAL", 
+	"errorStackTrace": error.cause as String default "Internal Server Error",
+	"errorType": errorType,
+	"retriable": "No",
+	"application": p('application.name'),
+	"failingComponent": error.failingComponent default "Oracle WMS SFTP Read"
+
+}]]></ee:set-variable>
+					<ee:set-variable variableName="emailContent"><![CDATA[%dw 2.0
+output application/java
+var errorType = error.errorType..identifier joinBy (",") default "Internal Server Error"
+
+---
+{
+	"subject" : "Error Occurred while Writing/Appending content to the Inventory file",
+	"storeName" : vars.invDetails.store default "",
+	"SKU" : vars.invDetails.sku default "",
+	"fileName" : vars.fileName default "",
+	"correlationID" : vars.traceId default correlationId,
+	"errorData" : {
+	"application": p('application.name'),
+	"errorDescription": (error.description) default "Internal Server Error",
+	"errorSeverity": "CRITICAL", 
+	"errorStackTrace": error.cause as String default "Internal Server Error",
+	"errorType": errorType,
+	"errorDetails" : "Please Check Oracle WMS Error Directory for more details",
+	// A retry application can increment no. of external retries and terminate accordingly
+	"retryCount" : "0",
+	"failingComponent": error.failingComponent default "SFCC SFTP Write(Append)"
+	}
+}]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</on-error-propagate>
+	</error-handler>
+	<error-handler name="apikit-errors" doc:id="6def21c4-b13d-49ea-bab7-5376c3caaaef" >
+		<on-error-propagate type="APIKIT:BAD_REQUEST">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Bad request"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">400</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Method not allowed"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">405</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not acceptable"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">406</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Unsupported media type"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">415</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not Implemented"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">501</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+	</error-handler>
 	<error-handler name="sftp-read-error-handler" doc:id="e754edef-42e3-4fc2-9419-c679053b1520" >
 		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="7f7cf085-39dc-4143-bfa0-a34f71e34c93" type="SFTP:ILLEGAL_PATH">
 					<logger level="ERROR" doc:name="log-error" doc:id="de011662-c515-4ace-ba94-315794a14b8d" message='#["Error Occured while calling SFTP READ, Oracle WMS SFTP : " ++ (error.description default "") ++ ", TraceId : " ++ ((vars.traceId) default "")]'/>
