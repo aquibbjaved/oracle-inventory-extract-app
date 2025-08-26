@@ -30,5 +30,6 @@ output application/json
 				<logger level="INFO" doc:name="log-end" doc:id="f0d21f98-f585-430d-a9c5-fcc856b11192" message='#["The Scheduler has been disabled via the app properties, exiting the flow"]'/>
 			</otherwise>
 		</choice>
+		<error-handler ref="error-common" />
 	</flow>
 </mule>

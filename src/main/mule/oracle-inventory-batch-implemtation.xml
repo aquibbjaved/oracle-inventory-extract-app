@@ -13,8 +13,7 @@ http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/fil
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd">
 	<flow name="oracle-inventory-batch-implementation-flow" doc:id="e6a5daa6-3b58-49bd-b4aa-1737b7af8ac7" >
-		<http:listener doc:name="Listener" doc:id="3150e34b-078c-45d7-a602-0bc4d927225e" config-ref="HTTP_Listener_config" path="/batch-step"/>
-		<logger level="INFO" doc:name="log-start" doc:id="4a4cc31d-4607-48c9-bd8a-a24f52f953be" message='#["Started Flow Batch Process Files, proceeding to read file. TraceId : " ++ ((vars.traceId) default"")]' category="INFO" />
+		<logger level="INFO" doc:name="log-start" doc:id="4a4cc31d-4607-48c9-bd8a-a24f52f953be" message="#[&quot;Started Flow Batch Process Files, proceeding to read file. TraceId :  $(vars.traceId default '')&quot;]" category="INFO" />
 		<flow-ref doc:name="Read Oracle WMS SFTP" doc:id="c8b3dd48-2369-4cb1-a486-525bdd892c11" name="sftp-oracle-wms-csvfile-read-subflow"/>
 		<choice doc:name="Check if Data was received ?" doc:id="7c8176df-0ad6-40f4-9f2f-bba4bf11f7e1" >
 			<when expression="#[(isEmpty(payload)) and (isEmpty(vars.errorData))]" >
