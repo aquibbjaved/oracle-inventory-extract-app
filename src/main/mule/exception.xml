@@ -34,8 +34,6 @@ var errorType = error.errorType..identifier joinBy (",") default "Internal Serve
 {
 	"subject" : "Error Occurred while Writing/Appending content to the Inventory file",
 	"storeName" : vars.invDetails.store default "",
-	"SKU" : vars.invDetails.sku default "",
-	"fileName" : vars.fileName default "",
 	"correlationID" : vars.traceId default correlationId,
 	"errorData" : {
 	"application": p('application.name'),
@@ -44,18 +42,20 @@ var errorType = error.errorType..identifier joinBy (",") default "Internal Serve
 	"errorStackTrace": error.cause as String default "Internal Server Error",
 	"errorType": errorType,
 	"errorDetails" : "Please Check Oracle WMS Error Directory for more details",
-	// A retry application can increment no. of external retries and terminate accordingly
-	"retryCount" : "0",
 	"failingComponent": error.failingComponent default "SFCC SFTP Write(Append)"
 	}
 }]]></ee:set-variable>
 				</ee:variables>
 			</ee:transform>
+			<async doc:name="Async" doc:id="f38719dc-d5be-4fd9-b834-e09e5080829b" >
+				<flow-ref doc:name="Send Error Notification" doc:id="2399ba4f-1eb0-4371-8261-71f1e0e7bc13" name="smtp-send-email-notification-subflow" />
+			</async>
 		</on-error-propagate>
 	</error-handler>
 	<error-handler name="apikit-errors" doc:id="6def21c4-b13d-49ea-bab7-5376c3caaaef" >
 		<on-error-propagate type="APIKIT:BAD_REQUEST">
-                <ee:transform doc:name="Transform Message">
+                <logger level="INFO" doc:name="Logger" doc:id="0cd23ba8-1b37-4970-8de0-02b034fba06a" message='#["Error Occured : " ++ (error.description default "") ++ ", TraceId : " ++ ((vars.traceId) default "")]' />
+			<ee:transform doc:name="Transform Message">
                     <ee:message>
                         <ee:set-payload><![CDATA[%dw 2.0
 output application/json
@@ -66,9 +66,11 @@ output application/json
                         <ee:set-variable variableName="httpStatus">400</ee:set-variable>
                     </ee:variables>
                 </ee:transform>
-            </on-error-propagate>
+            
+</on-error-propagate>
             <on-error-propagate type="APIKIT:NOT_FOUND">
-                <ee:transform doc:name="Transform Message">
+                <logger level="INFO" doc:name="Logger" doc:id="1eb32bcb-e4f5-42f8-8e7d-fd503de78ff5" message='#["Error Occured : " ++ (error.description default "") ++ ", TraceId : " ++ ((vars.traceId) default "")]' />
+			<ee:transform doc:name="Transform Message">
                     <ee:message>
                         <ee:set-payload><![CDATA[%dw 2.0
 output application/json
@@ -79,9 +81,11 @@ output application/json
                         <ee:set-variable variableName="httpStatus">404</ee:set-variable>
                     </ee:variables>
                 </ee:transform>
-            </on-error-propagate>
+            
+</on-error-propagate>
             <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
-                <ee:transform doc:name="Transform Message">
+                <logger level="INFO" doc:name="Logger" doc:id="f991235e-485b-4ceb-9501-1f6b19ef0c05" message='#["Error Occured : " ++ (error.description default "") ++ ", TraceId : " ++ ((vars.traceId) default "")]' />
+			<ee:transform doc:name="Transform Message">
                     <ee:message>
                         <ee:set-payload><![CDATA[%dw 2.0
 output application/json
@@ -92,9 +96,11 @@ output application/json
                         <ee:set-variable variableName="httpStatus">405</ee:set-variable>
                     </ee:variables>
                 </ee:transform>
-            </on-error-propagate>
+            
+</on-error-propagate>
             <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
-                <ee:transform doc:name="Transform Message">
+                <logger level="INFO" doc:name="Logger" doc:id="3228195d-a24c-452b-845f-b06e3142f9d4" message='#["Error Occured : " ++ (error.description default "") ++ ", TraceId : " ++ ((vars.traceId) default "")]' />
+			<ee:transform doc:name="Transform Message">
                     <ee:message>
                         <ee:set-payload><![CDATA[%dw 2.0
 output application/json
@@ -105,9 +111,11 @@ output application/json
                         <ee:set-variable variableName="httpStatus">406</ee:set-variable>
                     </ee:variables>
                 </ee:transform>
-            </on-error-propagate>
+            
+</on-error-propagate>
             <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
-                <ee:transform doc:name="Transform Message">
+                <logger level="INFO" doc:name="Logger" doc:id="d686208a-e8ba-4345-abed-d32e1c4b647b" message='#["Error Occured : " ++ (error.description default "") ++ ", TraceId : " ++ ((vars.traceId) default "")]' />
+			<ee:transform doc:name="Transform Message">
                     <ee:message>
                         <ee:set-payload><![CDATA[%dw 2.0
 output application/json
@@ -118,9 +126,11 @@ output application/json
                         <ee:set-variable variableName="httpStatus">415</ee:set-variable>
                     </ee:variables>
                 </ee:transform>
-            </on-error-propagate>
+            
+</on-error-propagate>
             <on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
-                <ee:transform doc:name="Transform Message">
+                <logger level="INFO" doc:name="Logger" doc:id="87825bca-fa8c-46a5-8e08-55706615cfe9" message='#["Error Occured : " ++ (error.description default "") ++ ", TraceId : " ++ ((vars.traceId) default "")]'/>
+			<ee:transform doc:name="Transform Message">
                     <ee:message>
                         <ee:set-payload><![CDATA[%dw 2.0
 output application/json
@@ -183,7 +193,7 @@ var errorType = error.errorType..identifier joinBy (",") default "Internal Serve
 	</error-handler>
 	<error-handler name="sftp-write-error-handler" doc:id="0cd76105-049e-4078-a330-7e60cba8c307" >
 		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="bfde9a34-b20f-462a-bdae-8ef5ff837af1" type="ANY">
-			<logger level="INFO" doc:name="log-error" doc:id="c459a13b-683e-49d6-a120-a1e42eb8dace" message='#["FATAL : Error Occured while calling SFTP Write, Oracle SFTP : " ++ (error.description default "") ++ "check Email for more details. TraceId : " ++ ((vars.traceId) default "")]'/>
+			<logger level="INFO" doc:name="log-error" doc:id="c459a13b-683e-49d6-a120-a1e42eb8dace" message='#["FATAL : Error Occured while calling SFTP Write : " ++ (error.description default "") ++ "check Email for more details. TraceId : " ++ ((vars.traceId) default "")]'/>
 			<ee:transform doc:name="Email/Error Data Variable" doc:id="2443be22-7a1a-44c7-bbad-936fbe80c6a7" >
 				<ee:message >
 				</ee:message>

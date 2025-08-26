@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:email="http://www.mulesoft.org/schema/mule/email"
+<mule xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway"
+	xmlns:email="http://www.mulesoft.org/schema/mule/email"
 	xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
 	xmlns:http="http://www.mulesoft.org/schema/mule/http"
-	xmlns:file="http://www.mulesoft.org/schema/mule/file"
-	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="
+	xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
 http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd 
 http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd 
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
-http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd">
 	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="d66939d8-9f41-487f-80ab-ddbf049da9d5" >
-		<http:listener-connection host="0.0.0.0" port="8081" />
+		<http:listener-connection host="${https.listener.host}" port="${https.listener.port}" />
 	</http:listener-config>
 	<file:config name="File_Config" doc:name="File Config" doc:id="772ff968-a351-4d3b-987b-3bb4c7fbee89" />
 	<file:config name="File_Config1" doc:name="File Config" doc:id="3141857e-8872-42d3-8f7f-0eda9c2f5699" >
@@ -51,4 +52,5 @@ http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/fil
 	<http:request-config name="HTTP_Request_configuration_Mock_SFCC" doc:name="HTTP Request configuration" doc:id="82ef61de-6a72-4ff6-89f2-1a80c2b3af32" >
 		<http:request-connection protocol="HTTPS" host="${sftp.sfcc.mockHttpServer}" />
 	</http:request-config>
+	<api-gateway:autodiscovery apiId="${application.api.id}" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="420ebbe2-ea14-486b-b7d2-e2249e6d2950" flowRef="oracle-inventory-extract-app-main" />
 </mule>
