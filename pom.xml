@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.mycompany</groupId>
-	<artifactId>oracle-inventory-extract-app-impl</artifactId>
+	<artifactId>oracle-inventory-extract-app</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 	<packaging>mule-application</packaging>
 
@@ -23,6 +23,12 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-clean-plugin</artifactId>
 				<version>3.2.0</version>
+				<configuration>
+			        <deployment>
+			            <applicationName>${mule.env}-${project.artifactId}</applicationName>
+			            <muleEnv>${mule.env}</muleEnv>
+			        </deployment>
+    			</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.mule.tools.maven</groupId>
