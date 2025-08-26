@@ -11,7 +11,8 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 	<flow name="sfcc-sftp-push-subflow" doc:id="e9232c0c-18b2-4375-bb6b-b14981336903" >
 		<choice doc:name="Choice" doc:id="2c9edf86-08eb-49e3-9950-fab2e95ef790" >
 			<when expression="#[(p('sftp.sfcc.mocked') as Boolean)]">
-				<http:request method="GET" doc:name="Mock Server Request" doc:id="49f1a41d-542b-4724-ad7a-9cef31cc3f3f" config-ref="HTTP_Request_configuration_Mock_SFCC" path="${sftp.sfcc.mockHttpServerPath}"/>
+				<!-- [STUDIO:"Mock Server Request"]<http:request method="GET" doc:name="Mock Server Request" doc:id="49f1a41d-542b-4724-ad7a-9cef31cc3f3f" config-ref="HTTP_Request_configuration_Mock_SFCC" path="${sftp.sfcc.mockHttpServerPath}"/> [STUDIO] -->
+				<logger level="INFO" doc:name="Mock Logger" doc:id="3282d4f8-c355-4a97-904d-b76abb6398db" message='#["Request has been Mocked due to network constraints"]'/>
 			</when>
 			<otherwise >
 				<sftp:write doc:name="SFTP Write SFCC" doc:id="c7fbc23d-3f10-499e-ad69-3c561c6aa090" config-ref="SFTP_Config_SFCC_Write" path='#[vars.fileName default ""]' mode="APPEND">
