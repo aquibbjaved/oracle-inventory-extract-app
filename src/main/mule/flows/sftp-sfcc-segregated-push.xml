@@ -1,18 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
-	xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp" xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
 http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
-http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	
 	<flow name="sfcc-sftp-push-subflow" doc:id="e9232c0c-18b2-4375-bb6b-b14981336903" >
-		<sftp:write doc:name="SFTP Write SFCC" doc:id="c7fbc23d-3f10-499e-ad69-3c561c6aa090" config-ref="SFTP_Config_SFCC_Write" path='#[vars.fileName default ""]' mode="APPEND">
+		<choice doc:name="Choice" doc:id="2c9edf86-08eb-49e3-9950-fab2e95ef790" >
+			<when expression="#[(p('sftp.sfcc.mocked') as Boolean)]">
+				<http:request method="GET" doc:name="Mock Server Request" doc:id="49f1a41d-542b-4724-ad7a-9cef31cc3f3f" config-ref="HTTP_Request_configuration_Mock_SFCC" path="${sftp.sfcc.mockHttpServerPath}"/>
+			</when>
+			<otherwise >
+				<sftp:write doc:name="SFTP Write SFCC" doc:id="c7fbc23d-3f10-499e-ad69-3c561c6aa090" config-ref="SFTP_Config_SFCC_Write" path='#[vars.fileName default ""]' mode="APPEND">
 				<sftp:content><![CDATA[#[%dw 2.0
 output application/csv header=false
 ---
 payload]]]></sftp:content>
 			</sftp:write>
+			</otherwise>
+		</choice>
 		<remove-variable doc:name="Remove Variable (inventoryDetail)" doc:id="bdea5320-b4f7-4f21-a692-0c4f8c1c0215" variableName="invDetails"/>
 		<remove-variable doc:name="Remove Variable (fileName)" doc:id="dd24aaa9-cbcf-4d8c-9ad4-3c1e9230f40c" variableName="fileName"/>
 		<logger level="INFO" doc:name="log-end" doc:id="5b47c927-30a0-4711-8f7b-4a8769a82e73" message='#["End of Write(Append) inside Batch_Step. TraceId : " ++ ((vars.traceId) default"")]' />

@@ -48,5 +48,7 @@ http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/fil
 			</reconnection>
 		</sftp:connection>
 	</sftp:config>
-	
+	<http:request-config name="HTTP_Request_configuration_Mock_SFCC" doc:name="HTTP Request configuration" doc:id="82ef61de-6a72-4ff6-89f2-1a80c2b3af32" >
+		<http:request-connection protocol="HTTPS" host="${sftp.sfcc.mockHttpServer}" />
+	</http:request-config>
 </mule>

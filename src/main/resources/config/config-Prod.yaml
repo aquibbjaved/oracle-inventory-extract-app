@@ -35,11 +35,15 @@ sftp:
             workingDirectory: "C:/Users/aaquib/oracle"  
     ########## Hosted At Local Computer Via OpenSSH ###########
     sfcc:
+        mocked: "true"
         host: "192.168.31.97"
         port: "22"
         username: "aaquib"
         password: "Soda$!12345"
-        workingDirectory: "C:/Users/aaquib/sfcc"  
+        workingDirectory: "C:/Users/aaquib/sfcc" 
+        mockHttpServer : "68addf3ca0b85b2f2cf4ee22.mockapi.io/api/v1/sfcc"
+        mockHttpServerPath: "api/v1/sfcc"
+          
     #### Retry/Reconnection Configuration #########################
     retry:
         attempts: "2"

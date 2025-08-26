@@ -23,8 +23,7 @@ var period = ("P" ++ offset) as Period
 					</ee:variables>
 				</ee:transform>
 				<logger level="INFO" doc:name="log-start" doc:id="a75c94f8-4f0f-42d0-944e-8e9d78733eb9" message='#["Start of SFTP Read, Oracle WMS Directory"]' />
-				<sftp:read doc:name="Read Oracle SFTP" doc:id="9e410fc2-bb37-4b05-890e-2b734da46675" config-ref="SFTP_Config_Oracle_Read" path="#[vars.sourceFileName]" >
-					<non-repeatable-stream />
+				<sftp:read doc:name="Read Oracle SFTP" doc:id="9e410fc2-bb37-4b05-890e-2b734da46675" config-ref="SFTP_Config_Oracle_Read" path="#[vars.sourceFileName]" outputMimeType="application/csv; streaming=true">
 				</sftp:read>
 				<error-handler ref="sftp-read-error-handler" />
 			</try>
