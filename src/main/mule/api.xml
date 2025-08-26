@@ -18,7 +18,7 @@
 				<ee:set-variable variableName="traceId" ><![CDATA[%dw 2.0
 output application/json
 ---
-(uuid()[0 to 17] ++ ":" ++ uuid()[0 to 17] ++ ":0:0" replace "-" with "")]]></ee:set-variable>
+attributes.headers."trace-id" default(uuid()[0 to 17] ++ ":" ++ uuid()[0 to 17] ++ ":0:0" replace "-" with "")]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
 		<apikit:router config-ref="oracle-inventory-extract-app-config" />
@@ -41,6 +41,7 @@ output application/json
 } as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
             </ee:message>
         </ee:transform>
+		<error-handler ref="error-common" />
     </flow>
     <flow name="get:\healthcheck\ping:oracle-inventory-extract-app-config">
 		<logger level="INFO" doc:name="Logger" doc:id="48f9ec3a-1ea1-4bc7-9faa-aa9620c787ef" />
@@ -56,5 +57,6 @@ output application/json
 } as Object {encoding: "UTF-8", mediaType: "application/json"}]]></ee:set-payload>
             </ee:message>
         </ee:transform>
+		<error-handler ref="error-common" />
     </flow>
 </mule>

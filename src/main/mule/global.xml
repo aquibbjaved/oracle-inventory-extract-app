@@ -52,5 +52,5 @@ http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/m
 	<http:request-config name="HTTP_Request_configuration_Mock_SFCC" doc:name="HTTP Request configuration" doc:id="82ef61de-6a72-4ff6-89f2-1a80c2b3af32" >
 		<http:request-connection protocol="HTTPS" host="${sftp.sfcc.mockHttpServer}" />
 	</http:request-config>
-	<api-gateway:autodiscovery apiId="${application.api.id}" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="420ebbe2-ea14-486b-b7d2-e2249e6d2950" flowRef="oracle-inventory-extract-app-main" />
-</mule>
+	<!-- <api-gateway:autodiscovery apiId="${application.api.id}" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="420ebbe2-ea14-486b-b7d2-e2249e6d2950" flowRef="oracle-inventory-extract-app-main" />
+ --></mule>

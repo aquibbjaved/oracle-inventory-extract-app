@@ -97,6 +97,24 @@ output application/java
 							<flow-ref doc:name="Write(Append) Oracle SFTP for Redelivery " doc:id="8f1d8867-6459-4e9a-bd9b-c62b16b24e11" name="sftp-oracle-wms-error-push-subflow"/>
 						</batch:step>
 			</batch:process-records>
+					<batch:on-complete >
+						<ee:transform doc:name="Metrics" doc:id="739f4873-a869-40af-b7dd-e2f1e9bcfecf" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"traceId": vars.traceId default uuid(),
+	"jobInstanceId" : payload.jobInstanceId default"",
+	"totalRecords" : payload.totalRecords default "",
+	"loadedRecords" : payload.loadedRecords default "",
+	"failedRecords" : payload.failedRecords default "",
+	"state" : payload.state default""
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+						<logger level="INFO" doc:name="Logger" doc:id="b821e79b-3a61-4b0e-a041-e174a4886149" message="#[payload]"/>
+					</batch:on-complete>
 		</batch:job>
 			</otherwise>
 		</choice>
