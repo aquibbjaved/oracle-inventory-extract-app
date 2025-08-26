@@ -2,7 +2,7 @@
 application:
       name: "oracle-inventory-extract-application"
       api:
-         id:"20490130"
+         id: "20490130"
 
 ####### HTTP Listener Properties ###########
 https:
