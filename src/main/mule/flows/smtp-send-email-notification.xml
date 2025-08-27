@@ -10,7 +10,8 @@ http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/em
 			<until-successful maxRetries="${emailSMTP.retry.attempts}" doc:name="Until Successful" doc:id="5a99d942-60d2-49b7-9e13-b7c8e7cd8251" millisBetweenRetries="${emailSMTP.retry.frequency}">
 				<email:send doc:name="Send" doc:id="60f1fe96-57ea-4045-a52b-e8da1fbedfa5" toAddresses="#[(p('emailSMTP.toAddresses') splitBy &quot;,&quot;)]" config-ref="Email_SMTP" fromAddress="#[(p('emailSMTP.fromAddress'))]" ccAddresses="#[(p('emailSMTP.ccAddresses') splitBy &quot;,&quot;)]" subject='#[vars.emailContent.subject default "[]"]'>
 					<email:body contentType="text/html" encoding="UTF-8">
-						<email:content ><![CDATA[<!DOCTYPE html>
+						<email:content ><![CDATA[#[if(vars.isInvalidComm default false)
+'<!DOCTYPE html>
 <html>
   <body>
     <p>Hello &amp; Greetings,</p>
@@ -24,7 +25,23 @@ http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/em
     <p>Thanks &amp; Regards,<br/>
     Messaging Management Team</p>
   </body>
-</html>]]></email:content>
+</html>'
+else
+	'<!DOCTYPE html>
+<html>
+  <body>
+    <p>Hello &amp; Greetings,</p>
+    <p>Invalid Records were found while syncing Store Level Inventory Data from Oracle WMS to SFCC.<br/>
+    Please refer attached document for more details & take appropriate actions.</p>
+    
+    <p style="color:gray; font-size:small; font-style:italic;">
+      This is an automated Email. Replies to this will not be monitored.
+    </p>
+    
+    <p>Thanks &amp; Regards,<br/>
+    Messaging Management Team</p>
+  </body>
+</html>']]]></email:content>
 					</email:body>
 					<email:attachments ><![CDATA[#[{
 	"errorDetails.json" : write((vars.emailContent default {}),'application/json')
@@ -33,7 +50,7 @@ http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/em
 			</until-successful>
 			<error-handler >
 				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="8e63645b-b362-4987-830a-63eb9e37bee7" >
-					<logger level="INFO" doc:name="Logger" doc:id="8f19f64f-bf03-4cf4-89e1-b57d0b2770bf" />
+					<logger level="ERROR" doc:name="Logger" doc:id="8f19f64f-bf03-4cf4-89e1-b57d0b2770bf" message='#["SMTP Send Email errored out. TraceID : " ++ (vars.traceId default "")]'/>
 				</on-error-continue>
 			</error-handler>
 		</try>

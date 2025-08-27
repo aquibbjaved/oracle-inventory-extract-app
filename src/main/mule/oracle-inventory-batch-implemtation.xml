@@ -44,7 +44,7 @@ payload]]></ee:set-payload>
 var storeId = payload."StoreId" default ""
 output application/json
 ---
-"from_mule/Inventory" ++ "_" ++ (storeId as String) ++ "_" ++ (now() as Date {format:'dd-MM-yyyy'} as String) ++ ".csv"]]></ee:set-variable>
+"from_mule/Inventory" ++ "_" ++ (storeId as String) ++ "_" ++ (now() as String {format: "dd-MM-yyyy"}) ++ ".csv"]]></ee:set-variable>
 									<ee:set-variable variableName="invDetails" ><![CDATA[%dw 2.0
 output application/java
 ---
@@ -64,7 +64,7 @@ output application/java
 							<ee:set-variable variableName="fileName"><![CDATA[%dw 2.0
 output application/json
 ---
-"from_mule/Inventory_Invalid_" ++ (now() as Date {format:'dd-MM-yyyy'} as String) ++ ".csv"]]></ee:set-variable>
+"from_mule/Inventory_Invalid_" ++ (now() as String {format: "dd-MM-yyyy"}) ++ ".csv"]]></ee:set-variable>
 									<ee:set-variable variableName="invDetails" ><![CDATA[%dw 2.0
 output application/json
 ---
@@ -84,7 +84,7 @@ output application/json
 									<ee:set-variable variableName="fileName" ><![CDATA[%dw 2.0
 output application/json
 ---
-"oracle/from_mule/Inventory_Failed_" ++ (now() as Date {format:'dd-MM-yyyy'} as String) ++ ".csv"]]></ee:set-variable>
+"oracle/from_mule/Inventory_Failed_" ++ (now() as String {format: "dd-MM-yyyy"}) ++ ".csv"]]></ee:set-variable>
 									<ee:set-variable variableName="invDetails" ><![CDATA[%dw 2.0
 output application/json
 ---
@@ -116,13 +116,13 @@ output application/json
 						<scatter-gather doc:name="Scatter Gather" doc:id="b0ca10b2-b1c1-403d-afba-dd8442a99219" >
 							<route>
 								<async doc:name="Async" doc:id="6c214025-330b-4cb6-944c-9d93fb54393f" >
-									<!-- [STUDIO:"Send Invalid Records"]<flow-ref doc:name="Send Invalid Records" doc:id="6d10cdee-9e27-4735-aeb0-5eabd579eef3" /> [STUDIO] -->
-									<logger level="INFO" doc:name="Logger" doc:id="46f874f0-a784-46a1-8efe-6598135cb4c3" message="#[payload]"/>
+									<logger level="INFO" doc:name="Logger" doc:id="4b0719e5-b111-432d-8850-a31d61bee5ae" />
+									<flow-ref doc:name="Send Invalid Records Email" doc:id="6d10cdee-9e27-4735-aeb0-5eabd579eef3" name="sftp-sfcc-extract-invalid-file-subflow"/>
 								</async>
 							</route>
 							<route >
 								<choice doc:name="Check if Errored Out records present ?" doc:id="ea2d70e0-6b36-4e3c-968e-ea1deb0c730c" >
-									<when expression="#[(!isEmpty(payload.failedRecords)) or (((payload.failedRecords) as Number)&gt;0)]">
+									<when expression="#[(!isEmpty(payload.failedRecords)) and (((payload.failedRecords) as Number)&gt;0)]">
 										<async doc:name="Async" doc:id="995c8714-ea9d-4c3d-892c-139c6bc0206c" >
 											<ee:transform doc:name="errorData" doc:id="bd3a7f1b-23f0-4539-9f74-ad8e77769175">
 									<ee:message>
@@ -138,7 +138,7 @@ output application/json
 	"traceId" : vars.traceId,
 	"runMetrics" : write(payload default {},'application/json'),
 	"retriable": "Yes",
-	"errorRecordsDirectory" : "oracle/from_mule/Inventory_Failed_" ++ (now() as Date {format:'dd-MM-yyyy'} as String) ++ ".csv",
+	"errorRecordsDirectory" : "oracle/from_mule/Inventory_Failed_" ++ (now() as String {format: "dd-MM-yyyy"}) ++ ".csv",
 	"errorDetails" : "Please Check Oracle WMS Error Directory for more details",
 	// A retry application can increment no. of external retries and terminate accordingly
 	"retryCount" : "0",
@@ -148,7 +148,7 @@ output application/json
 }]]></ee:set-variable>
 									</ee:variables>
 								</ee:transform>
-											<flow-ref doc:name="Trigger Email" doc:id="182de83c-d246-4900-8475-bcc01698764a" name="smtp-send-email-notification-subflow" />
+											<flow-ref doc:name="Trigger Email on the failed Records" doc:id="182de83c-d246-4900-8475-bcc01698764a" name="smtp-send-email-notification-subflow" />
 										</async>
 									</when>
 								</choice>
@@ -167,51 +167,6 @@ null]]></ee:set-payload>
 		</batch:job>
 			</otherwise>
 		</choice>
+		<error-handler ref="error-common" />
 	</flow>
-	<!-- [STUDIO:"oracle-inv-batch-implementationFlow1"]<flow name="oracle-inv-batch-implementationFlow1" doc:id="5557de12-53d3-49ca-bc0c-2d17bf3d7fd1" >
-		<http:listener doc:name="Listener" doc:id="cf826662-6ba9-41ef-9e47-6e7fb2455067" config-ref="HTTP_Listener_config" path="/batch-test"/>
-		<sftp:read doc:name="Read Oracle SFTP" doc:id="f29f43eb-27d7-45a3-ae83-1bd771640966" outputMimeType="application/csv; streaming=true; header=true" path="inventory1.csv" config-ref="SFTP_Config_Oracle_Read">
-			<non-repeatable-stream />
-			<reconnect-forever />
-		</sftp:read>
-		<ee:transform doc:name="Transform Message" doc:id="ff547335-387b-41ac-94fa-1ed72f5b8566" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-@StreamCapable
-input payload application/csv header=true
-output application/json deferred=true
-&#45;&#45;-
-payload&#93;&#93;></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-		<batch:job jobName="batch-job-oracle-inventory-extract-process1" doc:id="0bca901a-55f7-4f16-ab58-d330aef1c21a" maxConcurrency="${batch.max-concurrency}" blockSize="${batch.block-size}" maxFailedRecords="-1">
-			<batch:process-records>
-				<batch:step name="Batch_Step_Valid_Records" doc:id="da4d4b50-933a-4c04-ba74-88cb618e8c7b" acceptExpression='#[ (!((payload pluck ((value, key, index) -&gt; isEmpty(value))) contains true)) and ((payload."Quantity" as String) matches /^\d+$/) and (["STANDARD","BACKORDER"&#93; contains (upper(payload.Type default "")))&#93;'>
-					<ee:transform doc:name="Transform Message" doc:id="452287fb-fc15-46ce-9b75-43c5f710c8dc" >
-						<ee:message >
-						</ee:message>
-						<ee:variables >
-							<ee:set-variable variableName="storeId" ><![CDATA[%dw 2.0
-output application/json
-&#45;&#45;-
-payload."StoreId"&#93;&#93;></ee:set-variable>
-						</ee:variables>
-					</ee:transform>
-					<file:write doc:name="Write" doc:id="55a58e6c-1738-4b38-aec0-22ede6dfa67e" config-ref="File_Config1" mode="APPEND" path="#[&quot;Inventory&quot; ++ &quot;_&quot; ++ (vars.storeId as String) ++ &quot;_&quot; ++ (now() as Date {format:'dd-MM-yyyy'} as String) ++ &quot;.csv&quot;&#93;">
-						<file:content ><![CDATA[#[%dw 2.0
-output application/csv header=false
-&#45;&#45;-
-payload&#93;&#93;&#93;></file:content>
-					</file:write>
-					<sftp:write doc:name="SFTP Write" doc:id="1ae9da90-bb4e-4374-8933-ded5b317e3c9" path="#[&quot;Inventory&quot; ++ &quot;_&quot; ++ (vars.storeId as String) ++ &quot;_&quot; ++ (now() as Date {format:'dd-MM-yyyy'} as String) ++ &quot;.csv&quot;&#93;" mode="APPEND" config-ref="SFTP_Config_SFCC_Write">
-						<sftp:content><![CDATA[#[%dw 2.0
-output application/csv header=false
-&#45;&#45;-
-payload&#93;&#93;&#93;></sftp:content>
-					</sftp:write>
-					<remove-variable doc:name="Remove Variable" doc:id="be1dfd80-4459-4a5f-b4ba-0564aff0b2af" variableName="storeId"/>
-				</batch:step>
-			</batch:process-records>
-		</batch:job>
-	</flow> [STUDIO] -->
 </mule>
