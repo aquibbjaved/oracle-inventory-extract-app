@@ -50,7 +50,7 @@ else
 			</until-successful>
 			<error-handler >
 				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="8e63645b-b362-4987-830a-63eb9e37bee7" >
-					<logger level="ERROR" doc:name="Logger" doc:id="8f19f64f-bf03-4cf4-89e1-b57d0b2770bf" message='#["SMTP Send Email errored out. TraceID : " ++ (vars.traceId default "")]'/>
+					<logger level="ERROR" doc:name="log-error" doc:id="8f19f64f-bf03-4cf4-89e1-b57d0b2770bf" message='#["SMTP Send Email errored out. TraceID : " ++ (vars.traceId default "")]'/>
 				</on-error-continue>
 			</error-handler>
 		</try>

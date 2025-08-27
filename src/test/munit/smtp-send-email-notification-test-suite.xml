@@ -22,6 +22,13 @@
 		<munit:execution >
 			<flow-ref doc:name="Flow-ref to smtp-send-email-notification-subflow" doc:id="a04c9c6e-2df4-40ae-9c17-3698124491c0" name="smtp-send-email-notification-subflow"/>
 		</munit:execution>
+		<munit:validation >
+			<munit-tools:verify-call doc:name="Verify call" doc:id="bc845a21-907e-4013-b392-0f339e9734cc" processor="logger">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="log-error" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
 	</munit:test>
 
 

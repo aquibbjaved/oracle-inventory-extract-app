@@ -167,6 +167,5 @@ null]]></ee:set-payload>
 		</batch:job>
 			</otherwise>
 		</choice>
-		<error-handler ref="error-common" />
 	</flow>
 </mule>
