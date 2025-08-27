@@ -84,7 +84,7 @@ output application/json
 									<ee:set-variable variableName="fileName" ><![CDATA[%dw 2.0
 output application/json
 ---
-"oracle/from_mule/Inventory_Failed_" ++ (now() as String {format: "dd-MM-yyyy"}) ++ ".csv"]]></ee:set-variable>
+"from_mule/Inventory_Failed_" ++ (now() as String {format: "dd-MM-yyyy"}) ++ ".csv"]]></ee:set-variable>
 									<ee:set-variable variableName="invDetails" ><![CDATA[%dw 2.0
 output application/json
 ---
