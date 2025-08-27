@@ -2,7 +2,7 @@
 application:
       name: "oracle-inventory-extract-application"
       api:
-         id:""
+         id: ${application.api.id}
 
 ####### HTTP Listener Properties ###########
 https:
@@ -12,19 +12,18 @@ https:
       path: "/api/v1/*"
   keystore:
       path: "certificates/server-keystore.jks"
-      password: "mule123"
+      password: "![cNVAfK6TH3iml9HwemQRSA==]"
 
 ######## Scheduler #########################
 scheduler:
       cron: "0 0 4 * * ?"
       timeZone: "UTC"
-      status: "online"
+      status: ${scheduler.status}
 
 ######### Batch Job Configurations ##########
 batch:
     block-size: ${batch.block-size}
     max-concurrency: ${batch.max-concurrency}
-    
     
 ######### SFTP Connection Configurations #########################################
 sftp:
@@ -34,48 +33,49 @@ sftp:
             host: "inventory.couchdrop.io"
             port: "22"
             username: "user_b2q59uzhd54yn9bp"
-            password: "onPkw8iA3dpf8MGVF3iM"
+            password: "![emcS586SR5myPUlb2HWBEdO/zVbpB0wvazakMPPgXPU=]"
             workingDirectory: "/"
             ###### In case Reprocessing is needed for a earlier Dated File ##########
             dateOffSet: "0D"
+        ########## Hosted At Local Computer Via OpenSSH ###########
         write:
-            host: "192.168.31.97"
+            host: "![T63fbBAWh3IJYWtFk66x/w==]"
             port: "22"
-            username: "aaquib"
-            password: "Soda$!12345"
-            workingDirectory: "C:/Users/aaquib/oracle"  
+            username: "![C4HJMCLGDp9tl98p4Ie2qg==]"
+            password: "![AFWjY11HdaYrBb8EYLFoAQ==]"
+            workingDirectory: ${sftp.oracle.write.workingDirectory} 
     ########## Hosted At Local Computer Via OpenSSH ###########
     sfcc:
-        mocked: "true"
-        host: "192.168.31.97"
+        mocked: "false"
+        host: "![T63fbBAWh3IJYWtFk66x/w==]"
         port: "22"
-        username: "aaquib"
-        password: "Soda$!12345"
-        workingDirectory: "C:/Users/aaquib/sfcc" 
+        username: "![C4HJMCLGDp9tl98p4Ie2qg==]"
+        password: "![AFWjY11HdaYrBb8EYLFoAQ==]"
+        workingDirectory: ${sftp.sfcc.workingDirectory}
         mockHttpServer : "68addf3ca0b85b2f2cf4ee22.mockapi.io"
         mockHttpServerPath: "api/v1/sfcc"
           
     #### Retry/Reconnection Configuration #########################
     retry:
-        attempts: "2"
-        frequency: "5000"
+        attempts: ${sftp.retry.attempts}
+        frequency: ${sftp.retry.frequency}
     reconnection:
-        attempts: "2"
-        frequency: "5000"
-    responseTimeout: "30000" 
+        attempts: ${sftp.reconnection.attempts}
+        frequency: ${sftp.reconnection.frequency}
+    responseTimeout: ${sftp.responseTimeout}
     
     
 ############ Email SMTP Configurations #############################
 emailSMTP:
      host: "smtp.gmail.com"
-     port: "25"
-     username: "98sleo@gmail.com"
-     password: "jarkaqkbwfkxrtuj"
+     port: "587"
+     username: "![U/QKPbl0udrG39PvJkB3lMTtV6r1ZzHzc0Ye4QUwfsc=]"
+     password: "![hzj8CFHKl7A5/1imDj9zhprBx8UZNSTNxrYUQjRXXhg=]"
      fromAddress: "98sleo@gmail.com"
      toAddresses: "aquibbjaved@gmail.com"
      ccAddresses: "ajaved1008@gmail.com"
      #### Retry/Reconnection Configuration #########################
      retry:
-        attempts: "2"
-        frequency: "5000"
+        attempts: ${emailSMTP.retry.attempts}
+        frequency: ${emailSMTP.retry.frequency}
    

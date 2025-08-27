@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:tls="http://www.mulesoft.org/schema/mule/tls"
+<mule xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
+	xmlns:tls="http://www.mulesoft.org/schema/mule/tls"
 	xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway"
 	xmlns:email="http://www.mulesoft.org/schema/mule/email"
-	xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp"
-	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:file="http://www.mulesoft.org/schema/mule/file"
-	xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+	xmlns:sftp="http://www.mulesoft.org/schema/mule/sftp" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
 http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd 
 http://www.mulesoft.org/schema/mule/sftp http://www.mulesoft.org/schema/mule/sftp/current/mule-sftp.xsd 
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
 http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd
-http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd">
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
 	<http:listener-config name="HTTPS_Listener_config" doc:name="HTTP Listener config" doc:id="d66939d8-9f41-487f-80ab-ddbf049da9d5" >
 		<http:listener-connection host="${https.listener.host}" port="${https.listener.port}" protocol="HTTPS" tlsContext="TLS_Context_Listener">
 		</http:listener-connection>
@@ -24,28 +25,31 @@ http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/
 	<configuration-properties doc:name="Configuration properties" doc:id="e648b64d-6d3c-4ae8-9617-91fce2f15a46" file="config/config-${mule.env}.yaml" />
 	<global-property doc:name="Global Property" doc:id="a7866d0a-f2d5-4cfe-aea6-3186fc13eb15" name="mule.env" value="Sandbox"/>	
 	<email:smtp-config name="Email_SMTP" doc:name="Email SMTP" doc:id="02319113-24fe-4696-b6c2-bb82fb6e8126" >
-		<email:smtp-connection host="${emailSMTP.host}" user="${emailSMTP.username}" password="${emailSMTP.password}" port="587">
+		<email:smtp-connection host="${emailSMTP.host}" user="${secure::emailSMTP.username}" password="${secure::emailSMTP.password}" port="${emailSMTP.port}">
+			<reconnection >
+				<reconnect frequency="${emailSMTP.retry.frequency}" count="${emailSMTP.retry.attempts}" />
+			</reconnection>
 			<email:properties >
 				<email:property key="mail.smtp.starttls.enable" value="true" />
 			</email:properties>
 		</email:smtp-connection>
 	</email:smtp-config>
 	<sftp:config name="SFTP_Config_SFCC_Write" doc:name="SFTP Config" doc:id="3f2e155d-a483-44fe-9f28-4089d840621d" >
-		<sftp:connection workingDir="${sftp.sfcc.workingDirectory}" host="${sftp.sfcc.host}" port="${sftp.sfcc.port}" username="${sftp.sfcc.username}" password="${sftp.sfcc.password}" >
+		<sftp:connection workingDir="${sftp.sfcc.workingDirectory}" host="${secure::sftp.sfcc.host}" port="${sftp.sfcc.port}" username="${secure::sftp.sfcc.username}" password="${secure::sftp.sfcc.password}" >
 			<reconnection >
 				<reconnect frequency="${sftp.reconnection.frequency}" count="${sftp.reconnection.attempts}" />
 			</reconnection>
 		</sftp:connection>
 	</sftp:config>
 	<sftp:config name="SFTP_Config_Oracle_Read" doc:name="SFTP Config" doc:id="d4cfdd22-9476-499e-aada-a45f477f48f9" >
-		<sftp:connection workingDir="${sftp.oracle.read.workingDirectory}" host="${sftp.oracle.read.host}" port="${sftp.oracle.read.port}" username="${sftp.oracle.read.username}" password="${sftp.oracle.read.password}" >
+		<sftp:connection workingDir="${sftp.oracle.read.workingDirectory}" host="${sftp.oracle.read.host}" port="${sftp.oracle.read.port}" username="${sftp.oracle.read.username}" password="${secure::sftp.oracle.read.password}" >
 			<reconnection >
 				<reconnect frequency="${sftp.reconnection.frequency}" count="${sftp.reconnection.attempts}" />
 			</reconnection>
 		</sftp:connection>
 	</sftp:config>
 	<sftp:config name="SFTP_Config_Oracle_Write" doc:name="SFTP Config" doc:id="cc0c0896-b035-40ca-a246-1ec32e881965" >
-		<sftp:connection workingDir="${sftp.oracle.write.workingDirectory}" host="${sftp.oracle.write.host}" port="${sftp.oracle.write.port}" username="${sftp.oracle.write.username}" password="${sftp.oracle.write.password}" >
+		<sftp:connection workingDir="${sftp.oracle.write.workingDirectory}" host="${secure::sftp.oracle.write.host}" port="${sftp.oracle.write.port}" username="${secure::sftp.oracle.write.username}" password="${secure::sftp.oracle.write.password}" >
 			<reconnection >
 				<reconnect frequency="${sftp.reconnection.frequency}" count="${sftp.reconnection.attempts}" />
 			</reconnection>
@@ -56,6 +60,7 @@ http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/
 	</http:request-config>
 	<api-gateway:autodiscovery apiId="${application.api.id}" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="420ebbe2-ea14-486b-b7d2-e2249e6d2950" flowRef="oracle-inventory-extract-app-main" />
 	<tls:context name="TLS_Context_Listener" doc:name="TLS Context" doc:id="46e6264e-6b13-493c-a2de-9ee1a5b14f1f" >
-		<tls:key-store type="jks" path="${https.keystore.path}" keyPassword="${https.keystore.password}" password="${https.keystore.password}" />
+		<tls:key-store type="jks" path="${https.keystore.path}" keyPassword="${secure::https.keystore.password}" password="${secure::https.keystore.password}" />
 	</tls:context>
+	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="a7e00dee-5b4f-48cc-bb02-3da470cc5eec" file="config/config-${mule.env}.yaml" key="${mule.key}" />
 </mule>
