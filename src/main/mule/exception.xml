@@ -31,7 +31,7 @@ var errorType = error.errorType..identifier joinBy (",") default "Internal Serve
 
 ---
 {
-	"subject" : "Error Occurred while Writing/Appending content to the Inventory file",
+	"subject" : "Error Occurred at Mule App Writing/Appending content to the Inventory file",
 	"storeName" : vars.invDetails.store default "",
 	"correlationID" : vars.traceId default correlationId,
 	"errorData" : {
@@ -173,35 +173,7 @@ output application/json
                 </ee:transform>
             </on-error-propagate>
 	</error-handler>
-	<error-handler name="sftp-read-error-handler" doc:id="e754edef-42e3-4fc2-9419-c679053b1520" >
-		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="7f7cf085-39dc-4143-bfa0-a34f71e34c93" type="SFTP:ILLEGAL_PATH">
-					<logger level="ERROR" doc:name="log-error" doc:id="de011662-c515-4ace-ba94-315794a14b8d" message='#["Error, SFTP:ILLEGAL_PATH Occurred while calling SFTP READ, Oracle WMS SFTP, TraceId : " ++ ((vars.traceId) default "")]'/>
-				</on-error-continue>
-		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="7bb7ff28-aff7-45f7-8c96-af21688c4334" type="ANY">
-			<ee:transform doc:name="Error Data" doc:id="b0ea8422-4d6f-4546-b066-1a512470fdad">
-						<ee:message>
-						</ee:message>
-						<ee:variables>
-							<ee:set-variable variableName="errorData"><![CDATA[%dw 2.0
-output application/json
-var errorType = error.errorType..identifier joinBy (",") default "Internal Server Error"
----
-write({
-	"errorDescription": (error.description as String) default "Internal Server Error",
-	"errorSeverity": "CRITICAL", 
-	"errorStackTrace": error.cause as String default "Internal Server Error",
-	"errorType": errorType,
-	"retriable": "No",
-	"application": p('application.name'),
-	"failingComponent": error.failingComponent default "Oracle WMS SFTP Read"
-
-},'application/json')]]></ee:set-variable>
-						</ee:variables>
-				</ee:transform>
-			<logger level="ERROR" doc:name="log-error" doc:id="097be238-f9f8-40b0-9186-81f42ce23e5a" message='#["Error Occured while calling SFTP READ, Oracle WMS SFTP, TraceId : " ++ ((vars.traceId) default "") ++ "error details: " ++ ((vars.errorData)default "")]' />
-		</on-error-propagate>
-	</error-handler>
-	<error-handler name="sftp-write-error-handler" doc:id="0cd76105-049e-4078-a330-7e60cba8c307" >
+	<!-- <error-handler name="sftp-write-error-handler" doc:id="0cd76105-049e-4078-a330-7e60cba8c307" >
 		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="bfde9a34-b20f-462a-bdae-8ef5ff837af1" type="ANY">
 			<ee:transform doc:name="Email/Error Data Variable" doc:id="2443be22-7a1a-44c7-bbad-936fbe80c6a7" >
 				<ee:message >
@@ -211,7 +183,7 @@ write({
 output application/json
 var errorType = error.errorType..identifier joinBy (",") default "Internal Server Error"
 
----
+-&#45;&#45;
 {
 	"subject" : "Error Occurred while Writing/Appending content to the Inventory file",
 	"storeName" : vars.invDetails.store default "",
@@ -237,7 +209,7 @@ var errorType = error.errorType..identifier joinBy (",") default "Internal Serve
 					<ee:set-variable variableName="errorData" ><![CDATA[%dw 2.0
 output application/java
 var errorType = error.errorType..identifier joinBy (",") default "Internal Server Error"
----
+-&#45;&#45;
 write(({
 	"application": p('application.name'),
 	"traceId" : vars.traceId,
@@ -247,8 +219,6 @@ write(({
 	"errorType": errorType,
 	"retriable": "Yes",
 	"fileName" : vars.fileName default "",
-	"SKU" : (vars.invDetails default{})."sku" default "",
-	"StoreID" : (vars.invDetails default{})."store" default "",
 	"errorDetails" : "Please Check Oracle WMS Error Directory for more details",
 	// A retry application can increment no. of external retries and terminate accordingly
 	"retryCount" : "0",
@@ -266,5 +236,5 @@ write(({
 			<remove-variable doc:name="Remove errorData Variable" doc:id="74b7d065-cecc-4dc0-9f74-88fc7300b128" variableName="errorData"/>
 			<remove-variable doc:name="Remove emailContent Variable" doc:id="26fc4bfd-0202-491a-a01f-f9b5c1617a3b" variableName="emailContent"/>
 		</on-error-propagate>
-	</error-handler>
+	</error-handler> -->
 </mule>

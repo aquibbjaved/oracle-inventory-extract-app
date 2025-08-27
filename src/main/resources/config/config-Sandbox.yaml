@@ -72,7 +72,7 @@ emailSMTP:
      password: "jarkaqkbwfkxrtuj"
      fromAddress: "98sleo@gmail.com"
      toAddresses: "aquibbjaved@gmail.com"
-     ccAddresses: "jd38800@gmail.com,ajaved1008@gmail.com"
+     ccAddresses: "ajaved1008@gmail.com"
      #### Retry/Reconnection Configuration #########################
      retry:
         attempts: "2"

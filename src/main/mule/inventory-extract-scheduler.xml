@@ -20,12 +20,12 @@ output application/json
 if(!isEmpty(vars.traceId))
 	vars.traceId 
 else
-	(uuid()[0 to 17] ++ ":" ++ uuid()[0 to 17] ++ ":0:0" replace "-" with "")]]></ee:set-variable>
+	correlationId default (uuid()[0 to 17] ++ ":" ++ uuid()[0 to 17] ++ ":0:0" replace "-" with "")]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
 		<logger level="INFO" doc:name="Logger" doc:id="55549e03-7869-44a6-b747-debe936bac0a" message='#["Scheduler trigger detected, proceeding to check if the scheduler is enabled. TraceId: " ++ ((vars.traceId) default"")]'/>
 		<choice doc:name="Check if Scheduler Enabled ?" doc:id="e11049ed-ebe9-43c9-980e-c111174ac423" >
-			<when expression="#[p('scheduler.status') as Boolean]">
+			<when expression="#[(p('scheduler.status') default&quot;&quot;) == &quot;online&quot;]">
 				<logger level="INFO" doc:name="log-audit" doc:id="49f4744a-28cb-4aaf-bab0-5ec2f5e5f9e8" message='#["Scheduler is enabled, proceeding to read files from SFTP. TraceId : " ++ ((vars.traceId) default"")]'/>
 				<flow-ref doc:name="Refer: batch-impl-flow" doc:id="26ed08fd-0177-4df9-91ec-808a3ef5f552" name="oracle-inventory-batch-implementation-flow"/>
 			</when>

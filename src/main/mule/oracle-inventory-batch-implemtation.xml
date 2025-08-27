@@ -20,7 +20,7 @@ http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/ba
 				<logger level="INFO" doc:name="log-audit" doc:id="2efbf90e-a5c9-4475-85dd-05c024ec7bc4" message='#["The Inventory file found had no details. TraceId : " ++ ((vars.traceId) default"")]'/>
 			</when>
 			<when expression="#[(!isEmpty(vars.errorData))]">
-				<logger level="INFO" doc:name="log-audit" doc:id="c2efe5c6-9fda-4832-9606-995e35fbb6a2" message='#["The file Read process encountered an Error out. Check Email for more details. TraceId : " ++ ((vars.traceId) default"")]'/>
+				<logger level="INFO" doc:name="log-audit" doc:id="c2efe5c6-9fda-4832-9606-995e35fbb6a2" message='#["The file Read process found that file wasnt available in for the date in the directory. Check Email for more details. Process Exits. TraceId : " ++ ((vars.traceId) default"") ++ ", ErrorData: " ++ (vars.errorData default "")]'/>
 			</when>
 			<otherwise>
 				<ee:transform doc:name="Stream Payload in JSON" doc:id="809b757f-4f5c-4b80-af38-eb7eb52b65c5">
@@ -66,7 +66,7 @@ output application/json
 ---
 "from_mule/Inventory_Invalid_" ++ (now() as Date {format:'dd-MM-yyyy'} as String) ++ ".csv"]]></ee:set-variable>
 									<ee:set-variable variableName="invDetails" ><![CDATA[%dw 2.0
-output application/java
+output application/json
 ---
 {
 	"sku" : payload."SKU" default "",
@@ -86,7 +86,7 @@ output application/json
 ---
 "oracle/from_mule/Inventory_Failed_" ++ (now() as Date {format:'dd-MM-yyyy'} as String) ++ ".csv"]]></ee:set-variable>
 									<ee:set-variable variableName="invDetails" ><![CDATA[%dw 2.0
-output application/java
+output application/json
 ---
 {
 	"sku" : payload."SKU" default "",
@@ -113,7 +113,56 @@ output application/json
 }]]></ee:set-payload>
 							</ee:message>
 						</ee:transform>
-						<logger level="INFO" doc:name="Logger" doc:id="b821e79b-3a61-4b0e-a041-e174a4886149" message="#[payload]"/>
+						<scatter-gather doc:name="Scatter Gather" doc:id="b0ca10b2-b1c1-403d-afba-dd8442a99219" >
+							<route>
+								<async doc:name="Async" doc:id="6c214025-330b-4cb6-944c-9d93fb54393f" >
+									<!-- [STUDIO:"Send Invalid Records"]<flow-ref doc:name="Send Invalid Records" doc:id="6d10cdee-9e27-4735-aeb0-5eabd579eef3" /> [STUDIO] -->
+									<logger level="INFO" doc:name="Logger" doc:id="46f874f0-a784-46a1-8efe-6598135cb4c3" message="#[payload]"/>
+								</async>
+							</route>
+							<route >
+								<choice doc:name="Check if Errored Out records present ?" doc:id="ea2d70e0-6b36-4e3c-968e-ea1deb0c730c" >
+									<when expression="#[(!isEmpty(payload.failedRecords)) or (((payload.failedRecords) as Number)&gt;0)]">
+										<async doc:name="Async" doc:id="995c8714-ea9d-4c3d-892c-139c6bc0206c" >
+											<ee:transform doc:name="errorData" doc:id="bd3a7f1b-23f0-4539-9f74-ad8e77769175">
+									<ee:message>
+									</ee:message>
+									<ee:variables>
+										<ee:set-variable variableName="emailContent"><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"subject" : "Alert: Issues Encountered During Today’s Inventory Data Sync-up",
+	"errorDetails" : write(({
+	"application": p('application.name'),
+	"traceId" : vars.traceId,
+	"runMetrics" : write(payload default {},'application/json'),
+	"retriable": "Yes",
+	"errorRecordsDirectory" : "oracle/from_mule/Inventory_Failed_" ++ (now() as Date {format:'dd-MM-yyyy'} as String) ++ ".csv",
+	"errorDetails" : "Please Check Oracle WMS Error Directory for more details",
+	// A retry application can increment no. of external retries and terminate accordingly
+	"retryCount" : "0",
+	"failingComponent": error.failingComponent default "SFCC SFTP Write(Append)"
+
+}),'application/json')
+}]]></ee:set-variable>
+									</ee:variables>
+								</ee:transform>
+											<flow-ref doc:name="Trigger Email" doc:id="182de83c-d246-4900-8475-bcc01698764a" name="smtp-send-email-notification-subflow" />
+										</async>
+									</when>
+								</choice>
+							</route>
+						</scatter-gather>
+						<ee:transform doc:name="Nullify the payload" doc:id="9c41b682-9ff8-47f2-b11a-4ddbe28662c7" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+null]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+						<logger level="INFO" doc:name="log-end" doc:id="b821e79b-3a61-4b0e-a041-e174a4886149" message="#[&quot;Batch Process Ends&quot; ++ (write(payload,'application/json'))]" />
 					</batch:on-complete>
 		</batch:job>
 			</otherwise>
