@@ -222,6 +222,205 @@
 			</munit-tools:verify-call>
 		</munit:validation>
 	</munit:test>
+	<munit:test name="api-test-suite-oracle-inventory-extract-app-APIKIT-badrequest" doc:id="92c90f6d-3143-4d91-a644-5f9a643bafde" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock APIKIT" doc:id="70c0170a-2ed8-4556-ae7e-df9a4210d1c2" processor="apikit:router">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="oracle-inventory-extract-app-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:BAD_REQUEST" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="60ba291d-c157-4367-9818-9ba3ae068585" >
+				<flow-ref doc:name="Flow-ref to oracle-inventory-extract-app-main" doc:id="b9647826-a188-41ea-be99-5f6e2b11f57b" name="oracle-inventory-extract-app-main" />
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="e6d92771-e50e-4a91-9032-304383b3899e" />
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:verify-call doc:name="Verify call" doc:id="8e217a18-978b-4504-93ad-7c43e8fbe011" processor="ee:transform">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Transform Message" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="api-test-suite-oracle-inventory-extract-app-APIKIT:NOT_FOUND" doc:id="34a7068d-2673-4ba1-aa7f-10ef72e1338f" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock ApiKit" doc:id="3a20f2d2-ea27-4390-b073-2cf8734c76ae" processor="apikit:router">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="oracle-inventory-extract-app-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:NOT_FOUND" />
+				</munit-tools:then-return>
+			
+</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="df7ad9ee-dfb1-4d2d-bd26-33cae66b6c70" >
+				<flow-ref doc:name="Flow-ref to oracle-inventory-extract-app-main" doc:id="2666eaee-b647-48e2-99d5-4978e0d93f32" name="oracle-inventory-extract-app-main" />
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="c6595a2f-543a-40ed-a631-c6e85e1edced" />
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:verify-call doc:name="Verify call" doc:id="8e7e1163-4bdc-4642-b9ce-924c3678de36" processor="ee:transform">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Transform Message" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+
+		</munit:validation>
+	
+</munit:test>
+	<munit:test name="api-test-suite-oracle-inventory-extract-app-APIKIT:METHOD_NOT_ALLOWED" doc:id="de0f0311-bec9-4809-928c-216917f45042" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock Apikit" doc:id="4dd09778-8833-4969-8381-950bfa4b5f86" processor="apikit:router">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="oracle-inventory-extract-app-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:METHOD_NOT_ALLOWED" />
+				</munit-tools:then-return>
+			
+</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="8428ed3f-bec1-4771-9bfe-57eae654082a" >
+				<flow-ref doc:name="Flow-ref to oracle-inventory-extract-app-main" doc:id="42dcaca2-9f9d-4d6c-8199-39c5db242579" name="oracle-inventory-extract-app-main" />
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="f710206e-15ee-4423-ab18-f024e42aabc7" />
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:verify-call doc:name="Verify call" doc:id="e0a1c758-fa59-44b4-a88e-2c6221945b61" processor="ee:transform">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Transform Message" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+
+		</munit:validation>
+	
+</munit:test>
+	<munit:test name="api-test-suite-oracle-inventory-extract-app-APIKIT:NOT_ACCEPTABLE" doc:id="a6aa334c-a89f-4524-be21-5b3b68e866b2" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock APIKIT" doc:id="86676e54-a93b-488f-8a6d-cc198062090f" processor="apikit:router">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="oracle-inventory-extract-app-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:NOT_ACCEPTABLE" />
+				</munit-tools:then-return>
+			
+</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="4150087c-6a46-4758-ba3e-5de836d55130" >
+				<flow-ref doc:name="Flow-ref to oracle-inventory-extract-app-main" doc:id="41a56ad7-ef30-48e6-9d69-6fa54e1cb754" name="oracle-inventory-extract-app-main" />
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="923944da-c338-4081-a23f-6eb5cbbc207d" />
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:verify-call doc:name="Verify call" doc:id="3b5a7376-a051-402c-8300-73e08b26379a" processor="ee:transform">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Transform Message" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+
+		</munit:validation>
+	
+</munit:test>
+	<munit:test name="api-test-suite-oracle-inventory-extract-app-APIKIT:UNSUPPORTED_MEDIA_TYPE" doc:id="ccea13f3-4777-47b6-8c5e-42f5a26210db" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock APIKIT" doc:id="a8630883-361c-4b5d-898f-a6c7c7a93c36" processor="apikit:router">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="oracle-inventory-extract-app-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:UNSUPPORTED_MEDIA_TYPE" />
+				</munit-tools:then-return>
+			
+</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="543bd08b-8b78-4920-9ce1-43a400998d93" >
+				<flow-ref doc:name="Flow-ref to oracle-inventory-extract-app-main" doc:id="bb2f9232-1bf3-426b-8ed1-115d6b0abb63" name="oracle-inventory-extract-app-main" />
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="602becb3-e574-45e4-ba77-5fc0a60ba6d0" />
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:verify-call doc:name="Verify call" doc:id="9ada65a6-021a-4488-8f00-4b5ee5c38340" processor="ee:transform">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Transform Message" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+
+		</munit:validation>
+	
+</munit:test>
+	<munit:test name="api-test-suite-oracle-inventory-extract-app-APIKIT:NOT_IMPLEMENTED" doc:id="39cfe4f6-c26d-4cea-867b-e4c323e49baf" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock APIKIT" doc:id="d33f7ea6-3412-41b2-bdd5-c16856504406" processor="apikit:router">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="oracle-inventory-extract-app-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="APIKIT:NOT_IMPLEMENTED" />
+				</munit-tools:then-return>
+			
+</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution>
+			<try doc:name="Try" doc:id="ca3ffb61-f3c0-4585-ae23-02bece4b4b02" >
+				<flow-ref doc:name="Flow-ref to oracle-inventory-extract-app-main" doc:id="cc99e53a-c91c-44f3-96aa-26a3885f6a09" name="oracle-inventory-extract-app-main" />
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="beaa761f-193a-48a5-aa6e-0f4385c357ec" />
+				</error-handler>
+			</try>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:verify-call doc:name="Verify call" doc:id="c9be652d-3923-4dd4-ac2e-c1a2b14bf507" processor="ee:transform">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Transform Message" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+
+		</munit:validation>
+	
+</munit:test>
+	<munit:test name="api-test-suite-oracle-inventory-extract-app-mock-invoke-error" doc:id="60015aea-98e9-4f0c-9651-4bd634975c7e" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock ApiKit Router" doc:id="08ec326d-d85e-405f-834e-e72c497f6552" processor="apikit:router">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="oracle-inventory-extract-app-config" attributeName="config-ref" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-call flow="get:\invoke:oracle-inventory-extract-app-config" />
+			</munit-tools:mock-when>
+			<munit-tools:mock-when doc:name="Mock read flow ref" doc:id="017da8ad-3e61-48fc-9f92-083c857fb07f" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Read Oracle WMS SFTP" attributeName="doc:name" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="ANY" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to oracle-inventory-extract-app-main" doc:id="b2704e4f-cf9a-467b-b654-8e0c4c663ca7" name="oracle-inventory-extract-app-main"/>
+		</munit:execution>
+	</munit:test>
+	
 
 
 </mule>
