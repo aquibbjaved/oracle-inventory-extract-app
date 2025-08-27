@@ -71,9 +71,9 @@ emailSMTP:
      port: "587"
      username: "![U/QKPbl0udrG39PvJkB3lMTtV6r1ZzHzc0Ye4QUwfsc=]"
      password: "![hzj8CFHKl7A5/1imDj9zhprBx8UZNSTNxrYUQjRXXhg=]"
-     fromAddress: "98sleo@gmail.com"
-     toAddresses: "aquibbjaved@gmail.com"
-     ccAddresses: "ajaved1008@gmail.com"
+     fromAddress: ${emailSMTP.fromAddress}
+     toAddresses: ${emailSMTP.toAddresses}
+     ccAddresses: ${emailSMTP.toAddresses}
      #### Retry/Reconnection Configuration #########################
      retry:
         attempts: ${emailSMTP.retry.attempts}
