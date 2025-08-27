@@ -1,8 +1,8 @@
 ######## Application Parameters ############
 application:
       name: "oracle-inventory-extract-application"
-      api:
-         id: ""
+api:
+  id: ""
 
 ####### HTTP Listener Properties ###########
 https:
